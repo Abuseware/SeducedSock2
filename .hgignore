@@ -1,0 +1,10 @@
+syntax: glob
+iso
+src/*.o
+src/*.d
+src/logo.h
+kernel
+live.iso
+*~
+.DS_Store
+*.sublime-project
