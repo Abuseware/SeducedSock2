@@ -7,4 +7,4 @@ kernel
 live.iso
 *~
 .DS_Store
-*.sublime-project
+*.sublime-*

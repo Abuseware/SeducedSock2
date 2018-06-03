@@ -22,9 +22,14 @@ SECTIONS
     }
     .bss BLOCK(4K) : ALIGN(4K)
     {
-        *(COMMON)
         *(.bss)
     }
     _heap = ALIGN(4);
+    /DISCARD/ :
+    {
+        *(.comment)
+        *(.eh_frame)
+        *(.eh_frame_hdr)
+    }
 }
 

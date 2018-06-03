@@ -7,8 +7,6 @@ global _start
 %assign MB_MAGIC 0x1BADB002
 %assign MB_FLAGS 1
 
-%assign PAGETABLE_ADDR 0x1000
-
 %assign GDT_TYPE_DPL0 (0 << 13) | (0 << 14)
 %assign GDT_TYPE_DPL1 (1 << 13)
 %assign GDT_TYPE_DPL2 (2 << 13)
@@ -70,23 +68,30 @@ _start:
   cli
 
   ;;Prepare paging
-  xor eax, eax
-  mov edi, PAGETABLE_ADDR
-  mov ecx, 4096
-  rep stosd
+  ;xor eax, eax
+  ;mov edi, PAGETABLE_ADDR
+  ;mov ecx, 4096
+  ;rep stosd
 
-  mov DWORD [PAGETABLE_ADDR], PT_P | PT_RW | (PAGETABLE_ADDR + 0x1000)
-  mov DWORD [PAGETABLE_ADDR + 0x1000], PT_P | PT_RW | (PAGETABLE_ADDR + 0x2000)
-  mov DWORD [PAGETABLE_ADDR + 0x2000], PT_P | PT_RW | PT_PS
+  mov edx, pagetable
+  add edx, 0x1000
+  or edx, PT_P | PT_RW
+  mov DWORD [pagetable], edx
+  mov DWORD [pagetable + 0x1000], PT_P | PT_RW | PT_PS ; 1GB page
+
+  ;mov DWORD [PAGETABLE_ADDR], PT_P | PT_RW | (PAGETABLE_ADDR + 0x1000)
+  ;mov DWORD [PAGETABLE_ADDR + 0x1000], PT_P | PT_RW | PT_PS ; 1GB page
+  ;mov DWORD [PAGETABLE_ADDR + 0x1000], PT_P | PT_RW | (PAGETABLE_ADDR + 0x2000)
+  ;mov DWORD [PAGETABLE_ADDR + 0x2000], PT_P | PT_RW | PT_PS ; 4MB pages
 
   ;; Prepare for long mode
-  mov eax, PAGETABLE_ADDR
+  mov eax, pagetable
   mov cr3, eax
 
   ;; Set PAE
   mov eax, cr4
-    or eax, (1 << 5)
-    mov cr4, eax
+  or eax, (1 << 5)
+  mov cr4, eax
 
     ;; Set EFER
   mov ecx, 0xC0000080
@@ -158,3 +163,6 @@ gdt64:
 [segment .bss]
 resb 0x10000
 stack:
+align 4096
+pagetable:
+resq 0x800

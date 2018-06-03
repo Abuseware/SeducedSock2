@@ -1,5 +1,4 @@
 #include <stdint.h>
-#include <stdbool.h>
 
 #include "port.h"
 #include "pic.h"
@@ -10,10 +9,6 @@
 
 #include "fb.h"
 #include "logo.h"
-
-uint8_t counter = 0;
-bool tick = 0;
-
 
 void kmain() {
 
@@ -33,6 +28,8 @@ void kmain() {
     InterruptSetDescriptor(i, 0x8, interrupt_default);
   }
 
+  InterruptSetDescriptor(0x0, 0x8, interrupt_cpu_div_by_zero);
+  InterruptSetDescriptor(0x4, 0x8, interrupt_cpu_overflow);
   InterruptSetDescriptor(0x20, 0x8, interrupt_rtc);
 
 
@@ -56,6 +53,15 @@ void kmain() {
       FramebufferWriteChr(8, 0, 0x30 + (counter / 10 % 10), White, Black);
       FramebufferWriteChr(9, 0, 0x30 + (counter % 10), White, Black);
       tick = 0;
+    }
+
+    FramebufferWriteStr(0, 24, "Errors:", Red, Black);
+    for(uint8_t i = 0; i < 32; i++) {
+      if(exceptions & (1 << i)) {
+        FramebufferWriteChr(8 + i, 24, '1', Red, Black);
+      } else {
+        FramebufferWriteChr(8 + i, 24, '0', Green, Black);
+      }
     }
   }
 }
