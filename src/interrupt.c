@@ -1,7 +1,7 @@
 #include <stdint.h>
 
-#include "interrupt.h"
-#include "port.h"
+#include <interrupt.h>
+#include <asm/port.h>
 
 typedef struct idt_descriptor {
   uint16_t addr_low;

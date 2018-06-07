@@ -1,5 +1,5 @@
-#include "rtc.h"
-#include "port.h"
+#include <rtc.h>
+#include <asm/port.h>
 
 void RTCEnable(void) {
   //Enable RTC interrupt

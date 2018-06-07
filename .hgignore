@@ -1,8 +1,7 @@
 syntax: glob
 iso
-src/*.o
-src/*.d
-src/logo.h
+*.o
+*.d
 kernel
 live.iso
 *~

@@ -3,9 +3,10 @@
 
 extern kmain
 global _start
+global mb_info
 
 %assign MB_MAGIC 0x1BADB002
-%assign MB_FLAGS 1
+%assign MB_FLAGS 1 | 1 << 2
 
 %assign GDT_TYPE_DPL0 (0 << 13) | (0 << 14)
 %assign GDT_TYPE_DPL1 (1 << 13)
@@ -45,6 +46,23 @@ global _start
 %assign PT_PS (1 << 7)
 %assign PT_XD (1 << 63)
 
+struc multiboot
+  .magic resd 1
+  .flags resd 1
+  .checksum resd 1
+
+  .header_addr resd 1
+  .load_addr resd 1
+  .load_end_addr resd 1
+  .bss_end_addr resd 1
+  .entry_addr resd 1
+
+  .mode_type resd 1
+  .width resd 1
+  .height resd 1
+  .depth resd 1
+endstruc
+
 struc gdtr
   .size:  resw 1
   .base:  resd 1
@@ -58,31 +76,26 @@ struc gdt_entry
 endstruc
 
 [segment .multiboot]
-dd MB_MAGIC
-dd MB_FLAGS
-dd -(MB_MAGIC + MB_FLAGS)
-
+istruc multiboot
+  at multiboot.magic, dd MB_MAGIC
+  at multiboot.flags, dd MB_FLAGS
+  at multiboot.checksum, dd -(MB_MAGIC + MB_FLAGS)
+  at multiboot.mode_type, dd 1 ; EGA Text
+  at multiboot.width, dd 80
+  at multiboot.height, dd 25
+  at multiboot.depth, dd 16
+iend
 
 [segment .text]
 _start:
   cli
-
-  ;;Prepare paging
-  ;xor eax, eax
-  ;mov edi, PAGETABLE_ADDR
-  ;mov ecx, 4096
-  ;rep stosd
+  mov [mb_info], ebx
 
   mov edx, pagetable
   add edx, 0x1000
   or edx, PT_P | PT_RW
   mov DWORD [pagetable], edx
   mov DWORD [pagetable + 0x1000], PT_P | PT_RW | PT_PS ; 1GB page
-
-  ;mov DWORD [PAGETABLE_ADDR], PT_P | PT_RW | (PAGETABLE_ADDR + 0x1000)
-  ;mov DWORD [PAGETABLE_ADDR + 0x1000], PT_P | PT_RW | PT_PS ; 1GB page
-  ;mov DWORD [PAGETABLE_ADDR + 0x1000], PT_P | PT_RW | (PAGETABLE_ADDR + 0x2000)
-  ;mov DWORD [PAGETABLE_ADDR + 0x2000], PT_P | PT_RW | PT_PS ; 4MB pages
 
   ;; Prepare for long mode
   mov eax, pagetable
@@ -93,7 +106,7 @@ _start:
   or eax, (1 << 5)
   mov cr4, eax
 
-    ;; Set EFER
+  ;; Set EFER
   mov ecx, 0xC0000080
   rdmsr
   or eax, (1 << 8)
@@ -163,6 +176,10 @@ gdt64:
 [segment .bss]
 resb 0x10000
 stack:
+
 align 4096
 pagetable:
 resq 0x800
+
+mb_info:
+resd 1

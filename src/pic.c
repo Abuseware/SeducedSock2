@@ -1,7 +1,7 @@
 #include <stdint.h>
 
-#include "pic.h"
-#include "port.h"
+#include <pic.h>
+#include <asm/port.h>
 
 void PICInit(void) {
   //Reset PIC

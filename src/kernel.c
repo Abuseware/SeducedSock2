@@ -1,16 +1,25 @@
 #include <stdint.h>
 
-#include "port.h"
-#include "pic.h"
-#include "rtc.h"
+#include <asm/port.h>
+#include <pic.h>
+#include <rtc.h>
 
-#include "interrupt.h"
-#include "interrupt_handlers.h"
+#include <interrupt.h>
+#include <interrupt_handlers.h>
 
-#include "fb.h"
-#include "logo.h"
+#include <fb.h>
+#include <util.h>
+
+#include <multiboot.h>
+
+uint8_t showLogo = 5;
 
 void kmain() {
+  //Reset if requirements not met
+  if(!(mb_info->flags & (MULTIBOOT_INFO_BOOT_LOADER_NAME | MULTIBOOT_INFO_BOOTDEV | MULTIBOOT_INFO_CMDLINE | MULTIBOOT_INFO_FRAMEBUFFER_INFO))) {
+    outb(0x64, 0xfe);
+  }
+
 
   //Disable NMI
   outb(0x70, inb(0x70) | 0x80);
@@ -32,36 +41,42 @@ void kmain() {
   InterruptSetDescriptor(0x4, 0x8, interrupt_cpu_overflow);
   InterruptSetDescriptor(0x20, 0x8, interrupt_rtc);
 
-
+  FramebufferInit();
   FramebufferClear();
+  FramebufferCursorShow(11, 12);
   FramebufferCursorMove(0,0);
   FramebufferCursorHide();
 
-  for(uint32_t y = 0; y < logo_h; y++) {
-    for(uint32_t x = 0; x < logo_w; x++) {
-      FramebufferWriteChr(logo_x + x, logo_y + y, logo[y][x], Black, Black);
-    }
-  }
-
   InterruptEnable();
+
+  FramebufferPuts("Bootloader: ");
+  FramebufferPuts((char *)(uint64_t)mb_info->boot_loader_name);
+  FramebufferPutc('\n');
+
+  FramebufferPuts("Boot device: hd(");
+  FramebufferPuti(mb_info->boot_loader_name >> (8*3) & 0xff);
+  FramebufferPuts("),part(");
+  FramebufferPuti(mb_info->boot_loader_name >> (8*2) & 0xff);
+  FramebufferPuts(")\n");
+
+  FramebufferPuts("Cmdline: ");
+  FramebufferPuts((char *)(uint64_t)mb_info->cmdline);
+  FramebufferPutc('\n');
+
+
+  FramebufferPuts("Framebuffer: ");
+  FramebufferPuti(mb_info->framebuffer_width);
+  FramebufferPuts("x");
+  FramebufferPuti(mb_info->framebuffer_height);
+  FramebufferPuts("@");
+  FramebufferPuti(mb_info->framebuffer_bpp);
+  FramebufferPuts(" &");
+  FramebufferPuti(mb_info->framebuffer_addr);
+  FramebufferPutc('\n');
+
   while(1){
     __asm__("hlt");
-    if(tick) {
-      FramebufferSetStyle((counter % 0xe) + 1, 0);
-      FramebufferWriteStr(0, 0, "Ticks:", White, Black);
-      FramebufferWriteChr(7, 0, 0x30 + (counter / 100 % 10), White, Black);
-      FramebufferWriteChr(8, 0, 0x30 + (counter / 10 % 10), White, Black);
-      FramebufferWriteChr(9, 0, 0x30 + (counter % 10), White, Black);
-      tick = 0;
-    }
-
-    FramebufferWriteStr(0, 24, "Errors:", Red, Black);
-    for(uint8_t i = 0; i < 32; i++) {
-      if(exceptions & (1 << i)) {
-        FramebufferWriteChr(8 + i, 24, '1', Red, Black);
-      } else {
-        FramebufferWriteChr(8 + i, 24, '0', Green, Black);
-      }
-    }
+    //if(tick) {}
+    //tick = 0;
   }
 }

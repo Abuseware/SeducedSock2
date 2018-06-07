@@ -19,10 +19,20 @@ typedef enum FramebufferColor {
   White
 } FramebufferColor_t;
 
+void FramebufferInit(void);
+
 void FramebufferClear(void);
-void FramebufferSetStyle(FramebufferColor_t fg, FramebufferColor_t bg);
+void FramebufferScroll(void);
+
+void FramebufferCursorShow(uint8_t start, uint8_t end);
 void FramebufferCursorHide(void);
 void FramebufferCursorMove(uint8_t x, uint8_t y);
 
+void FramebufferSetStyle(FramebufferColor_t fg, FramebufferColor_t bg);
+
 void FramebufferWriteChr(uint8_t x, uint8_t y, char c, FramebufferColor_t fg, FramebufferColor_t bg);
 void FramebufferWriteStr(uint8_t x, uint8_t y, char *str, FramebufferColor_t fg, FramebufferColor_t bg);
+
+void FramebufferPutc(char c);
+void FramebufferPuts(char *str);
+void FramebufferPuti(int64_t i);

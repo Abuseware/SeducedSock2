@@ -1,8 +1,8 @@
 #include <stdint.h>
 
-#include "interrupt.h"
-#include "interrupt_handlers.h"
-#include "pic.h"
+#include <interrupt.h>
+#include <interrupt_handlers.h>
+#include <pic.h>
 
 static uint64_t rtc_ticks = 0;
 
