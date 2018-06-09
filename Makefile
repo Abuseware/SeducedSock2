@@ -15,7 +15,7 @@ PY = python3.6
 
 .PHONY: all
 
-.SUFFIXES: .txt .h .asm
+.SUFFIXES: .asm
 
 src_c = $(wildcard src/*.c)
 src_asm = $(wildcard src/asm/*.asm)
@@ -38,6 +38,9 @@ kernel:	$(obj)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
 -include $(dep)
 
+kernel.sym: kernel
+	nm kernel | awk '($$2 == "T"){ print $$1" "$$3 }' > $@
+
 live.iso: kernel grub.cfg grub_efi.cfg
 	rm -f $@
 	install -d iso/boot/grub
@@ -47,11 +50,14 @@ live.iso: kernel grub.cfg grub_efi.cfg
 	grub-mkstandalone -O x86_64-efi -o iso/EFI/BOOT/BOOTX64.EFI "boot/grub/grub.cfg=grub_efi.cfg"
 	grub-mkrescue -o $@ iso
 
-
 clean:
 	rm -f kernel
+	rm -f kernel.sym
 	rm -f $(obj)
 	rm -f $(dep)
 	rm -f live.iso
 	find iso -mindepth 1 -type f -delete
 	find iso -mindepth 1 -type d -delete
+
+run: live.iso kernel.sym
+	bochs -q -rc .bochsscript

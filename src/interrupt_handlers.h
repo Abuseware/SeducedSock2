@@ -1,9 +1,9 @@
 #pragma once
 
-uint8_t counter;
-uint8_t tick;
+volatile uint8_t counter;
+volatile uint8_t tick;
 
-uint64_t exceptions;
+volatile uint64_t exceptions;
 
 __attribute__ ((interrupt)) void interrupt_default(interrupt_frame_t __attribute__ ((unused)) *frame);
 

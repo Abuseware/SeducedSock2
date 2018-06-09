@@ -80,7 +80,7 @@ istruc multiboot
   at multiboot.magic, dd MB_MAGIC
   at multiboot.flags, dd MB_FLAGS
   at multiboot.checksum, dd -(MB_MAGIC + MB_FLAGS)
-  at multiboot.mode_type, dd 1 ; EGA Text
+  at multiboot.mode_type, dd 1 ; text mode
   at multiboot.width, dd 80
   at multiboot.height, dd 25
   at multiboot.depth, dd 16

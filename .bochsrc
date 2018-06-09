@@ -71,12 +71,12 @@ config_interface: textconfig
 #display_library: nogui
 #display_library: rfb
 #display_library: sdl, options="fullscreen" # startup in fullscreen mode
-#display_library: sdl2 #, options="fullscreen" # startup in fullscreen mode
+display_library: sdl2 #, options="fullscreen" # startup in fullscreen mode
 #display_library: term
 #display_library: vncsrv
 #display_library: win32
 #display_library: wx
-display_library: x
+#display_library: x
 
 #=======================================================================
 # CPU:
@@ -214,7 +214,7 @@ romimage: file=$BXSHARE/BIOS-bochs-latest
 #=======================================================================
 #vgaromimage: file=bios/VGABIOS-elpin-2.40
 vgaromimage: file=$BXSHARE/VGABIOS-lgpl-latest
-#vgaromimage: file=bios/VGABIOS-lgpl-latest-cirrus
+#vgaromimage: file=$BXSHARE/VGABIOS-lgpl-latest-cirrus
 
 #=======================================================================
 # VGA:
@@ -240,7 +240,7 @@ vgaromimage: file=$BXSHARE/VGABIOS-lgpl-latest
 # Examples:
 #   vga: extension=cirrus, update_freq=10
 #=======================================================================
-vga: extension=vbe, update_freq=1, realtime=1
+vga: extension=vbe, update_freq=10, realtime=1
 
 #=======================================================================
 # KEYBOARD:
@@ -334,7 +334,7 @@ mouse: enabled=0
 # Example:
 #   pci: enabled=1, chipset=i440fx, slot1=pcivga, slot2=ne2k
 #=======================================================================
-pci: enabled=1, chipset=i440fx
+pci: enabled=1, chipset=i440fx, slot1=pcivga
 
 #=======================================================================
 # CLOCK:
@@ -668,3 +668,32 @@ debugger_log: -
 #   magic_break: enabled=1
 #=======================================================================
 magic_break: enabled=1
+
+#=======================================================================
+# DEBUG_SYMBOLS:
+# This loads symbols from the specified file for use in Bochs' internal
+# debugger. Symbols are loaded into global context. This is equivalent to
+# issuing ldsym debugger command at start up.
+#
+# Example:
+#   debug_symbols: file="kernel.sym"
+#   debug_symbols: file="kernel.sym", offset=0x80000000
+#=======================================================================
+debug_symbols: file="kernel.sym"
+
+#print_timestamps: enabled=1
+
+#=======================================================================
+# PORT_E9_HACK:
+# The 0xE9 port doesn't exists in normal ISA architecture. However, we
+# define a convention here, to display on the console of the system running
+# Bochs anything that is written to it. The idea is to provide debug output
+# very early when writing BIOS or OS code for example, without having to
+# bother with setting up a serial port or etc. Reading from port 0xE9 will
+# will return 0xe9 to let you know if the feature is available.
+# Leave this 0 unless you have a reason to use it.
+#
+# Example:
+#   port_e9_hack: enabled=1
+#=======================================================================
+port_e9_hack: enabled=1

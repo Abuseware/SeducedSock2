@@ -7,7 +7,10 @@
 
 #include <multiboot.h>
 
-static unsigned char *fb;
+#define COLOR_FG LightGreen
+#define COLOR_BG Black
+
+static uint16_t *fb;
 static uint32_t fb_w;
 static uint32_t fb_h;
 
@@ -15,7 +18,7 @@ static uint8_t current_x;
 static uint8_t current_y;
 
 void FramebufferInit(void) {
-  fb = (unsigned char *)mb_info->framebuffer_addr;
+  fb = (uint16_t *)mb_info->framebuffer_addr;
   fb_w = mb_info->framebuffer_width;
   fb_h = mb_info->framebuffer_height;
 }
@@ -23,7 +26,7 @@ void FramebufferInit(void) {
 void FramebufferClear(void) {
   for(uint8_t y = 0; y < fb_h - 1; y++) {
     for(uint8_t x = 0; x < fb_w - 1; x++) {
-      FramebufferWriteChr(x, y, ' ', White, Black);
+      FramebufferWriteChr(x, y, ' ', COLOR_FG, COLOR_BG);
     }
   }
   current_x = 0;
@@ -33,20 +36,11 @@ void FramebufferClear(void) {
 void FramebufferScroll(void) {
   for(uint8_t y = 0; y < fb_h - 1; y++) {
     for(uint8_t x = 0; x < fb_w; x++) {
-      fb[(x * 2) + (y * fb_w * 2)] = fb[(x * 2) + ((y + 1) * fb_w * 2)];
-      fb[(x * 2) + (y * fb_w * 2) + 1] = fb[(x * 2) + ((y + 1) * fb_w * 2) + 1];
+      fb[(x) + (y * fb_w)] = fb[x + ((y + 1) * fb_w)];
     }
   }
   for(uint8_t x = 0; x < fb_w; x++) {
-    FramebufferWriteChr(x, fb_h - 1, ' ', White, Black);
-  }
-}
-
-void FramebufferSetStyle(FramebufferColor_t fg, FramebufferColor_t bg) {
-  for(uint8_t y = 0; y < fb_h; y++) {
-    for(uint8_t x = 0; x < fb_w; x++) {
-      fb[(x * 2) + (y * fb_w * 2) + 1] = (bg << 4) | (fg & 0x0f);
-    }
+    FramebufferWriteChr(x, fb_h - 1, ' ', COLOR_FG, COLOR_BG);
   }
 }
 
@@ -74,15 +68,14 @@ void FramebufferCursorMove(uint8_t x, uint8_t y) {
 }
 
 void FramebufferWriteChr(uint8_t x, uint8_t y, char c, FramebufferColor_t fg, FramebufferColor_t bg) {
-  fb[(x * 2) + (y * fb_w * 2)] = c;
-  fb[(x * 2) + (y * fb_w * 2) + 1] = (bg << 4) | (fg & 0x0f);
+  fb[x + (y * fb_w)] = c | (((bg << 4) | (fg & 0x0f)) << 8);
 }
 
 void FramebufferWriteStr(uint8_t x, uint8_t y, char *str, FramebufferColor_t fg, FramebufferColor_t bg) {
-  uint32_t i = 0;
-  while(str[i] != '\0') {
-    FramebufferWriteChr(x + i, y, str[i], fg, bg);
-    ++i;
+  uint64_t i = 0;
+  while(*str != '\0') {
+    FramebufferWriteChr(x + i, y, *str++, fg, bg);
+    i++;
   }
 }
 
@@ -97,8 +90,6 @@ void FramebufferPutc(char c) {
     current_y = fb_h - 1;
   }
 
-  FramebufferCursorMove(current_x, current_y);
-
   switch(c) {
     case '\n': {
       current_x = 0;
@@ -110,17 +101,16 @@ void FramebufferPutc(char c) {
       break;
     }
     default: {
-      FramebufferWriteChr(current_x++, current_y, c, White, Black);
+      FramebufferWriteChr(current_x++, current_y, c, COLOR_FG, COLOR_BG);
       break;
     }
   }
+  FramebufferCursorMove(current_x, current_y);
 }
 
 void FramebufferPuts(char *str) {
-  uint32_t i = 0;
-  while(str[i] != '\0') {
-    FramebufferPutc(str[i]);
-    ++i;
+  while(*str != '\0') {
+    FramebufferPutc(*str++);
   }
 }
 

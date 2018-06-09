@@ -4,7 +4,7 @@
 #include <interrupt_handlers.h>
 #include <pic.h>
 
-static uint64_t rtc_ticks = 0;
+static volatile uint64_t rtc_ticks = 0;
 
 //Default exception handler
 __attribute__ ((interrupt)) void interrupt_default(interrupt_frame_t __attribute__ ((unused)) *frame) {

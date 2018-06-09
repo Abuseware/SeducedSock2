@@ -8,15 +8,16 @@
 #include <interrupt_handlers.h>
 
 #include <fb.h>
+#include <vga.h>
+
+#include <bochs.h>
 #include <util.h>
 
 #include <multiboot.h>
 
-uint8_t showLogo = 5;
-
 void kmain() {
   //Reset if requirements not met
-  if(!(mb_info->flags & (MULTIBOOT_INFO_BOOT_LOADER_NAME | MULTIBOOT_INFO_BOOTDEV | MULTIBOOT_INFO_CMDLINE | MULTIBOOT_INFO_FRAMEBUFFER_INFO))) {
+  if(!(mb_info->flags & (MULTIBOOT_INFO_BOOT_LOADER_NAME | MULTIBOOT_INFO_BOOTDEV | MULTIBOOT_INFO_FRAMEBUFFER_INFO))) {
     outb(0x64, 0xfe);
   }
 
@@ -43,9 +44,9 @@ void kmain() {
 
   FramebufferInit();
   FramebufferClear();
-  FramebufferCursorShow(11, 12);
+  FramebufferCursorShow(10, 12);
   FramebufferCursorMove(0,0);
-  FramebufferCursorHide();
+  //VGAInit();
 
   InterruptEnable();
 
@@ -59,10 +60,6 @@ void kmain() {
   FramebufferPuti(mb_info->boot_loader_name >> (8*2) & 0xff);
   FramebufferPuts(")\n");
 
-  FramebufferPuts("Cmdline: ");
-  FramebufferPuts((char *)(uint64_t)mb_info->cmdline);
-  FramebufferPutc('\n');
-
 
   FramebufferPuts("Framebuffer: ");
   FramebufferPuti(mb_info->framebuffer_width);
@@ -70,8 +67,6 @@ void kmain() {
   FramebufferPuti(mb_info->framebuffer_height);
   FramebufferPuts("@");
   FramebufferPuti(mb_info->framebuffer_bpp);
-  FramebufferPuts(" &");
-  FramebufferPuti(mb_info->framebuffer_addr);
   FramebufferPutc('\n');
 
   while(1){
