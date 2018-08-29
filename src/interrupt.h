@@ -13,4 +13,4 @@ void InterruptInit(void);
 void InterruptEnable(void);
 void InterruptDisable(void);
 
-void InterruptSetDescriptor(uint8_t index, uint8_t segment, void *func);
+void InterruptSetDescriptor(uint8_t index, uint8_t segment, void (*func)(interrupt_frame_t *));

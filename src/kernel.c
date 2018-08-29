@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stddef.h>
 
 #include <asm/port.h>
 #include <pic.h>
@@ -7,21 +8,15 @@
 #include <interrupt.h>
 #include <interrupt_handlers.h>
 
-#include <fb.h>
+//#include <fb.h>
 #include <vga.h>
 
 #include <bochs.h>
 #include <util.h>
 
-#include <multiboot.h>
+#include <multiboot2.h>
 
 void kmain() {
-  //Reset if requirements not met
-  if(!(mb_info->flags & (MULTIBOOT_INFO_BOOT_LOADER_NAME | MULTIBOOT_INFO_BOOTDEV | MULTIBOOT_INFO_FRAMEBUFFER_INFO))) {
-    outb(0x64, 0xfe);
-  }
-
-
   //Disable NMI
   outb(0x70, inb(0x70) | 0x80);
 
@@ -42,34 +37,24 @@ void kmain() {
   InterruptSetDescriptor(0x4, 0x8, interrupt_cpu_overflow);
   InterruptSetDescriptor(0x20, 0x8, interrupt_rtc);
 
-  FramebufferInit();
-  FramebufferClear();
-  FramebufferCursorShow(10, 12);
-  FramebufferCursorMove(0,0);
-  //VGAInit();
+  MultibootInit();
+
+  struct multiboot_tag_string *mb_loader = (struct multiboot_tag_string *)MultibootGetTag(MULTIBOOT_TAG_TYPE_BOOT_LOADER_NAME);
+  struct multiboot_tag_bootdev *mb_bootdev = (struct multiboot_tag_bootdev *)MultibootGetTag(MULTIBOOT_TAG_TYPE_BOOTDEV);
+  struct multiboot_tag_framebuffer *mb_fb = (struct multiboot_tag_framebuffer *)MultibootGetTag(MULTIBOOT_TAG_TYPE_FRAMEBUFFER);
+
+  VGAInit();
 
   InterruptEnable();
 
-  FramebufferPuts("Bootloader: ");
-  FramebufferPuts((char *)(uint64_t)mb_info->boot_loader_name);
-  FramebufferPutc('\n');
 
-  FramebufferPuts("Boot device: hd(");
-  FramebufferPuti(mb_info->boot_loader_name >> (8*3) & 0xff);
-  FramebufferPuts("),part(");
-  FramebufferPuti(mb_info->boot_loader_name >> (8*2) & 0xff);
-  FramebufferPuts(")\n");
+  BochsPuts("Bootloader: ");
+  BochsPuts(mb_loader->string);
+  BochsPutc('\n');
 
+  puts("Hello!");
 
-  FramebufferPuts("Framebuffer: ");
-  FramebufferPuti(mb_info->framebuffer_width);
-  FramebufferPuts("x");
-  FramebufferPuti(mb_info->framebuffer_height);
-  FramebufferPuts("@");
-  FramebufferPuti(mb_info->framebuffer_bpp);
-  FramebufferPutc('\n');
-
-  while(1){
+  while(1) {
     __asm__("hlt");
     //if(tick) {}
     //tick = 0;

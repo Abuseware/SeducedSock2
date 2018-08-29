@@ -4,6 +4,9 @@
 global inb
 global outb
 
+global inw
+global outw
+
 [segment .text]
 outb:
   mov rax, rsi
@@ -14,4 +17,15 @@ outb:
 inb:
   mov rdx, rdi
   in al, dx
+  ret
+
+outw:
+  mov rax, rsi
+  mov rdx, rdi
+  out dx, ax
+  ret
+
+inw:
+  mov rdx, rdi
+  in ax, dx
   ret

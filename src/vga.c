@@ -1,50 +1,44 @@
 #include <stdint.h>
 
-#include <multiboot.h>
+#include <multiboot2.h>
+#include <asm/port.h>
 
 #include <util.h>
 #include <bochs.h>
+#include <bochs_vga.h>
 
 #include <vga.h>
+#include <vga_font.h>
 
-typedef struct VBE_MIB {
-  uint16_t attributes;
-  uint8_t winA,winB;
-  uint16_t granularity;
-  uint16_t winsize;
-  uint16_t segmentA, segmentB;
-  uint32_t realFctPtr;
-  uint16_t pitch; // bytes per scanline
+#define MARGIN 8
 
-  uint16_t Xres, Yres;
-  uint8_t Wchar, Ychar, planes, bpp, banks;
-  uint8_t memory_model, bank_size, image_pages;
-  uint8_t reserved0;
-
-  uint8_t red_mask, red_position;
-  uint8_t green_mask, green_position;
-  uint8_t blue_mask, blue_position;
-  uint8_t rsv_mask, rsv_position;
-  uint8_t directcolor_attributes;
-
-  uint32_t physbase;  // your LFB (Linear Framebuffer) address ;)
-  uint32_t reserved1;
-  uint16_t reserved2;
-} __attribute__((packed)) VBE_MIB_t;
-
-static VBE_MIB_t *vbe_mib;
+static uint32_t *vga;
 static uint16_t vga_w, vga_h, vga_pitch;
 static uint8_t vga_bpp;
-static volatile uint8_t *vga;
+
+static uint64_t current_x;
+static uint64_t current_y;
 
 void VGAInit(void) {
-  //vga = (uint16_t*)(uint64_t)mb_info->framebuffer_addr;
-  vga = (uint8_t*)0xa0000;
-  vbe_mib = (VBE_MIB_t*)(uint64_t)mb_info->vbe_mode_info;
-  vga_w = mb_info->framebuffer_width;
-  vga_h = mb_info->framebuffer_height;
-  vga_bpp = mb_info->framebuffer_bpp;
-  vga_pitch = vbe_mib->pitch;
+  struct multiboot_tag_framebuffer *mb_fb = (struct multiboot_tag_framebuffer *)MultibootGetTag(MULTIBOOT_TAG_TYPE_FRAMEBUFFER);
+
+  vga = (uint32_t *)mb_fb->common.framebuffer_addr;
+  vga_w = mb_fb->common.framebuffer_width;
+  vga_h = mb_fb->common.framebuffer_height;
+  vga_bpp = mb_fb->common.framebuffer_bpp;
+  vga_pitch = mb_fb->common.framebuffer_pitch;
+
+  /*if(BochsVGARead(VBE_DISPI_INDEX_ID) == VBE_DISPI_ID5) {
+    BochsVGAWrite(VBE_DISPI_INDEX_ENABLE, VBE_DISPI_DISABLED);
+    BochsVGAWrite(VBE_DISPI_INDEX_XRES, vga_w);
+    BochsVGAWrite(VBE_DISPI_INDEX_YRES, vga_h);
+    BochsVGAWrite(VBE_DISPI_INDEX_BPP, vga_bpp);
+
+    BochsVGAWrite(VBE_DISPI_INDEX_ENABLE, VBE_DISPI_ENABLED | VBE_DISPI_LFB_ENABLED);
+
+    BochsPuts("BOCHS detected, enabling LFB VGA\n");
+    //vga = (uint32_t *)VBE_DISPI_LFB_PHYSICAL_ADDRESS;
+  }*/
 
   BochsPuts("VGA: ");
   BochsPuti(vga_w);
@@ -54,9 +48,71 @@ void VGAInit(void) {
   BochsPuti(vga_bpp);
   BochsPuts(" Pitch: ");
   BochsPuti(vga_pitch);
+  BochsPuts(" Address: ");
+  BochsPuth((uint64_t)vga);
   BochsPutc('\n');
 }
 
-void VGAPutPixel(uint64_t x, uint64_t y, uint8_t rgb) {
-  vga[(y * vga_pitch) + x] = rgb;
+void VGAPutPixel(uint64_t x, uint64_t y, uint32_t color) {
+  vga[(y * vga_pitch / (vga_bpp / 8)) + x] = color;
+}
+
+void VGAPutc(char c) {
+  uint8_t buf;
+
+  switch(c) {
+    case '\n':
+      current_x = 0;
+      current_y++;
+      break;
+
+    case '\r':
+      current_x = 0;
+      break;
+  }
+
+  if(c < 0x20 || c > 0x7e) {
+    return;
+  }
+
+
+  if(current_x >= (vga_w - (2 * MARGIN)) / 8) {
+    current_x = 0;
+    current_y++;
+  }
+
+  if(current_y >= (vga_h - (2 * - MARGIN)) / 16) {
+    //TODO: Scrolling!
+    current_y = 0;
+  }
+
+  for(uint8_t y = 0; y < 13; y++) {
+    buf = vga_font[c - 0x20][12 - y];
+
+    for(uint8_t x = 0; x < 8; x++) {
+      if(buf >> (7 - x) & 1) {
+        VGAPutPixel(MARGIN + current_x * 10 + x, MARGIN + current_y * 16 + y, 0x0000ff00);
+      }
+    }
+  }
+
+  current_x++;
+}
+
+void VGAPuts(char *str) {
+  while(*str != '\0') {
+    VGAPutc(*str++);
+  }
+}
+
+void VGAPuti(int64_t i) {
+  char buf[21];
+  itoa(i, buf);
+  VGAPuts(buf);
+}
+
+void VGAPuth(int64_t i) {
+  char buf[23];
+  itoa(i, buf);
+  VGAPuts(buf);
 }

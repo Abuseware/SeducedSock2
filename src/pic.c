@@ -34,6 +34,7 @@ void PICSendEOI(uint8_t n) {
     case 0:
       outb(0x20, 0x20);
       break;
+
     case 1:
       outb(0xa0, 0x20);
       break;

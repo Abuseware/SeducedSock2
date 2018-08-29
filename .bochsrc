@@ -240,7 +240,7 @@ vgaromimage: file=$BXSHARE/VGABIOS-lgpl-latest
 # Examples:
 #   vga: extension=cirrus, update_freq=10
 #=======================================================================
-vga: extension=vbe, update_freq=10, realtime=1
+vga: extension=vbe, update_freq=5, realtime=1
 
 #=======================================================================
 # KEYBOARD:
@@ -439,7 +439,7 @@ clock: sync=realtime, rtc_sync=1, time0=utc
 #   ata3: enabled=1, ioaddr1=0x168, ioaddr2=0x360, irq=9
 #=======================================================================
 ata0: enabled=1, ioaddr1=0x1f0, ioaddr2=0x3f0, irq=14
-ata1: enabled=1, ioaddr1=0x170, ioaddr2=0x370, irq=15
+ata1: enabled=0, ioaddr1=0x170, ioaddr2=0x370, irq=15
 ata2: enabled=0, ioaddr1=0x1e8, ioaddr2=0x3e0, irq=11
 ata3: enabled=0, ioaddr1=0x168, ioaddr2=0x360, irq=9
 
@@ -525,7 +525,7 @@ boot: cdrom
 #   floppy_bootsig_check: disabled=0
 #   floppy_bootsig_check: disabled=1
 #=======================================================================
-floppy_bootsig_check: disabled=1
+floppy_bootsig_check: disabled=0
 
 #=======================================================================
 # LOG:
@@ -680,8 +680,6 @@ magic_break: enabled=1
 #   debug_symbols: file="kernel.sym", offset=0x80000000
 #=======================================================================
 debug_symbols: file="kernel.sym"
-
-#print_timestamps: enabled=1
 
 #=======================================================================
 # PORT_E9_HACK:

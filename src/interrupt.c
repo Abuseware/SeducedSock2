@@ -21,7 +21,7 @@ void InterruptInit(void) {
     void *base;
   } __attribute__((packed)) idtr = {(256 * 16) - 1, idt};
 
-  __asm__("lidt %0" :: "m" (idtr));
+  __asm__("lidt %0" :: "m"(idtr));
 }
 
 void InterruptEnable(void) {
@@ -32,9 +32,9 @@ void InterruptDisable(void) {
   __asm__("cli");
 }
 
-void InterruptSetDescriptor(uint8_t index, uint8_t segment, void *func) {
+void InterruptSetDescriptor(uint8_t index, uint8_t segment, void (*func)(interrupt_frame_t *)) {
   union {
-    void* ptr;
+    void *ptr;
     struct {
       uint16_t low;
       uint16_t mid;

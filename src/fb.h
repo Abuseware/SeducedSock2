@@ -1,6 +1,23 @@
 #pragma once
 
-typedef enum FramebufferColor {
+#define putc(x) FBPutc(x)
+#define puts(x) FBPuts(x)
+#define puti(x) FBPuti(x)
+#define puth(x) FBPuth(x)
+
+#include <stdint.h>
+
+typedef enum FBColor {
+  Background,
+  BackgroundHighlight,
+  Comment,
+  Foreground,
+  Emphasised,
+} FBColor_t;
+
+uint32_t FBColorPalette[5];
+
+/*typedef enum FBColor {
   Black,
   Blue,
   Green,
@@ -17,20 +34,23 @@ typedef enum FramebufferColor {
   LightMagenta,
   Yellow,
   White
-} FramebufferColor_t;
+} FBColor_t;*/
 
-void FramebufferInit(void);
+void FBInit(void);
 
-void FramebufferClear(void);
-void FramebufferScroll(void);
+void FBClear(void);
+void FBScroll(void);
 
-void FramebufferCursorShow(uint8_t start, uint8_t end);
-void FramebufferCursorHide(void);
-void FramebufferCursorMove(uint8_t x, uint8_t y);
+void FBCursorShow(uint8_t start, uint8_t end);
+void FBCursorHide(void);
+void FBCursorMove(uint8_t x, uint8_t y);
 
-void FramebufferWriteChr(uint8_t x, uint8_t y, char c, FramebufferColor_t fg, FramebufferColor_t bg);
-void FramebufferWriteStr(uint8_t x, uint8_t y, char *str, FramebufferColor_t fg, FramebufferColor_t bg);
+void FBSetColors(FBColor_t fg, FBColor_t bg);
 
-void FramebufferPutc(char c);
-void FramebufferPuts(char *str);
-void FramebufferPuti(int64_t i);
+void FBWriteChr(uint8_t x, uint8_t y, char c, FBColor_t fg, FBColor_t bg);
+void FBWriteStr(uint8_t x, uint8_t y, char *str, FBColor_t fg, FBColor_t bg);
+
+void FBPutc(char c);
+void FBPuts(char *str);
+void FBPuti(int64_t i);
+void FBPuth(int64_t i);
