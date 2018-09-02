@@ -19,6 +19,8 @@ static uint8_t vga_bpp;
 static uint64_t current_x;
 static uint64_t current_y;
 
+static uint32_t text_color = 0xffffffff;
+
 void VGAInit(void) {
   struct multiboot_tag_framebuffer *mb_fb = (struct multiboot_tag_framebuffer *)MultibootGetTag(MULTIBOOT_TAG_TYPE_FRAMEBUFFER);
 
@@ -51,6 +53,10 @@ void VGAInit(void) {
   BochsPuts(" Address: ");
   BochsPuth((uint64_t)vga);
   BochsPutc('\n');
+}
+
+void VGASetTextColor(uint32_t color) {
+  text_color = color;
 }
 
 void VGAPutPixel(uint64_t x, uint64_t y, uint32_t color) {
@@ -91,7 +97,7 @@ void VGAPutc(char c) {
 
     for(uint8_t x = 0; x < 8; x++) {
       if(buf >> (7 - x) & 1) {
-        VGAPutPixel(MARGIN + current_x * 10 + x, MARGIN + current_y * 16 + y, 0x0000ff00);
+        VGAPutPixel(MARGIN + current_x * 10 + x, MARGIN + current_y * 16 + y, text_color);
       }
     }
   }

@@ -18,16 +18,16 @@ istruc multiboot_header
   at multiboot_header.checksum, dd -(MULTIBOOT2_HEADER_MAGIC + MULTIBOOT_ARCHITECTURE_I386 + (multiboot_header_end - multiboot_header_start))
 iend
 
-align MULTIBOOT_HEADER_ALIGN
-istruc multiboot_header_tag_relocatable
-  at multiboot_header_tag_relocatable.type, dw MULTIBOOT_HEADER_TAG_RELOCATABLE
-  at multiboot_header_tag_relocatable.flags, dw MULTIBOOT_HEADER_TAG_OPTIONAL
-  at multiboot_header_tag_relocatable.size, dd 24
-  at multiboot_header_tag_relocatable.min_addr, dd 0
-  at multiboot_header_tag_relocatable.max_addr, dd 0xffffffff
-  at multiboot_header_tag_relocatable.align, dd 0x1000
-  at multiboot_header_tag_relocatable.preference, dd MULTIBOOT_LOAD_PREFERENCE_HIGH
-iend
+;align MULTIBOOT_HEADER_ALIGN
+;istruc multiboot_header_tag_relocatable
+;  at multiboot_header_tag_relocatable.type, dw MULTIBOOT_HEADER_TAG_RELOCATABLE
+;  at multiboot_header_tag_relocatable.flags, dw MULTIBOOT_HEADER_TAG_OPTIONAL
+;  at multiboot_header_tag_relocatable.size, dd 24
+;  at multiboot_header_tag_relocatable.min_addr, dd 0
+;  at multiboot_header_tag_relocatable.max_addr, dd 0xffffffff
+;  at multiboot_header_tag_relocatable.align, dd 0x1000
+;  at multiboot_header_tag_relocatable.preference, dd MULTIBOOT_LOAD_PREFERENCE_HIGH
+;iend
 
 align MULTIBOOT_HEADER_ALIGN
 istruc multiboot_header_tag_console_flags
@@ -66,7 +66,6 @@ multiboot_header_end:
 
 [segment .text]
 _start:
-  ;xchg bx, bx
   cli
 
   test eax, MULTIBOOT2_BOOTLOADER_MAGIC

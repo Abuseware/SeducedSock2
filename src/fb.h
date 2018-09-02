@@ -8,11 +8,11 @@
 #include <stdint.h>
 
 typedef enum FBColor {
-  Background,
-  BackgroundHighlight,
-  Comment,
-  Foreground,
-  Emphasised,
+  FB_Background,
+  FB_BackgroundHighlight,
+  FB_Comment,
+  FB_Foreground,
+  FB_Emphasised,
 } FBColor_t;
 
 uint32_t FBColorPalette[5];

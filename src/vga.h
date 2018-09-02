@@ -6,27 +6,18 @@
 #define puth(x) VGAPuth(x)
 
 typedef enum VGAColor {
-  Black,
-  Blue,
-  Green,
-  Cyan,
-  Red,
-  Magenta,
-  Brown,
-  LightGray,
-  Gray,
-  LightBlue,
-  LightGreen,
-  LightCyan,
-  LightRed,
-  LightMagenta,
-  Yellow,
-  White
+  VGA_Black = 0,
+  VGA_Blue = 0x000000ff,
+  VGA_Green = 0x0000ff00,
+  VGA_Red = 0x00ff0000,
+  VGA_White = 0xffffff
 } VGAColor_t;
 
 void VGAInit(void);
 
-void VGAPutPixel(uint64_t x, uint64_t y, uint32_t color);
+void VGASetTextColor(VGAColor_t color);
+
+void VGAPutPixel(uint64_t x, uint64_t y, VGAColor_t color);
 
 void VGAPutc(char c);
 void VGAPuts(char *str);

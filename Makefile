@@ -2,7 +2,7 @@ AS = nasm
 CC = gcc8
 
 ASFLAGS = -Isrc/asm -I.
-CFLAGS = -Isrc -Wall -Wextra -O0 -gdwarf -masm=intel -std=c11 -m64 -march=x86-64 -nostdlib -ffreestanding -fPIE -fPIC $(CFLAGS-$@)
+CFLAGS = -Isrc -Wall -Wextra -O0 -gdwarf -masm=intel -std=c11 -m64 -march=x86-64 -nostdlib -ffreestanding $(CFLAGS-$@)
 LDFLAGS = -Wl,-O1,--nmagic -Telf64.ld
 
 PY = python3.6
@@ -31,15 +31,15 @@ dep = $(obj:.o=.d)
 .txt.h:
 	$(PY) rle.py $<
 
-all: kernel live.iso
 -include $(dep)
+
+all: kernel live.iso
 
 kernel:	$(obj)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
--include $(dep)
 
-kernel.sym: kernel
-	nm kernel | awk '($$2 == "T"){ print $$1" "$$3 }' > $@
+#kernel.sym: kernel
+#	nm kernel | awk '($$2 == "T"){ print $$1" "$$3 }' > $@
 
 live.iso: kernel grub.cfg
 	rm -f $@
@@ -50,7 +50,7 @@ live.iso: kernel grub.cfg
 
 clean:
 	rm -f kernel
-	rm -f kernel.sym
+	#rm -f kernel.sym
 	rm -f $(obj)
 	rm -f $(dep)
 	rm -f live.iso
@@ -60,5 +60,11 @@ clean:
 format: $(wildcard src/*.c) $(wildcard src/*.h)
 	env ARTISTIC_STYLE_OPTIONS=.astylerc astyle -n $(wildcard src/*.c) $(wildcard src/*.h)
 
-run: live.iso kernel.sym
-	bochs -q -rc .bochsscript
+run: live.iso
+	bochs -q || true
+
+debug:
+	tmux new-session -d 'gmake run'
+	tmux split-window -h 'gdb'
+	tmux attach -d
+

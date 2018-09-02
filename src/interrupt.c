@@ -24,12 +24,14 @@ void InterruptInit(void) {
   __asm__("lidt %0" :: "m"(idtr));
 }
 
-void InterruptEnable(void) {
+__attribute__((naked)) void InterruptEnable(void) {
   __asm__("sti");
+  __asm__("ret");
 }
 
-void InterruptDisable(void) {
+__attribute__((naked)) void InterruptDisable(void) {
   __asm__("cli");
+  __asm__("ret");
 }
 
 void InterruptSetDescriptor(uint8_t index, uint8_t segment, void (*func)(interrupt_frame_t *)) {

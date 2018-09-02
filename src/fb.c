@@ -8,8 +8,8 @@
 
 #include <multiboot2.h>
 
-#define COLOR_FG Foreground
-#define COLOR_BG Background
+#define COLOR_FG FB_Foreground
+#define COLOR_BG FB_Background
 
 uint32_t FBColorPalette[5] = {
   0x232525,

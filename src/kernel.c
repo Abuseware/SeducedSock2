@@ -15,6 +15,7 @@
 #include <util.h>
 
 #include <multiboot2.h>
+#include "image.xbm"
 
 void kmain() {
   //Disable NMI
@@ -44,6 +45,7 @@ void kmain() {
   struct multiboot_tag_framebuffer *mb_fb = (struct multiboot_tag_framebuffer *)MultibootGetTag(MULTIBOOT_TAG_TYPE_FRAMEBUFFER);
 
   VGAInit();
+  VGASetTextColor(VGA_Red);
 
   InterruptEnable();
 
@@ -52,7 +54,17 @@ void kmain() {
   BochsPuts(mb_loader->string);
   BochsPutc('\n');
 
+  //puts("Hello!");
+
+  for(unsigned int y = 0; y < image_height; y++)
+    for(unsigned int x = 0; x < image_width / 8; x++)
+      for(unsigned int p = 0; p < 8; p++) {
+        VGAPutPixel((x * 8) + p, y, image_bits[(y * image_width / 8) + x] & 1 << p ? 0 : 0xffffffff);
+      }
+
   puts("Hello!");
+
+
 
   while(1) {
     __asm__("hlt");

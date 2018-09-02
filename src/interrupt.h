@@ -10,7 +10,7 @@ typedef struct interrupt_frame {
 
 void InterruptInit(void);
 
-void InterruptEnable(void);
-void InterruptDisable(void);
+__attribute__((naked)) void InterruptEnable(void);
+__attribute__((naked)) void InterruptDisable(void);
 
 void InterruptSetDescriptor(uint8_t index, uint8_t segment, void (*func)(interrupt_frame_t *));
