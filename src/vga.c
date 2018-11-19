@@ -16,8 +16,8 @@ static uint32_t *vga;
 static uint16_t vga_w, vga_h, vga_pitch;
 static uint8_t vga_bpp;
 
-static uint64_t current_x;
-static uint64_t current_y;
+static uint32_t current_x;
+static uint32_t current_y;
 
 static uint32_t text_color = 0xffffffff;
 
@@ -82,12 +82,12 @@ void VGAPutc(char c) {
   }
 
 
-  if(current_x >= (vga_w - (2 * MARGIN)) / 8) {
+  if(current_x >= ((uint32_t)vga_w - (2 * MARGIN)) / 8) {
     current_x = 0;
     current_y++;
   }
 
-  if(current_y >= (vga_h - (2 * - MARGIN)) / 16) {
+  if(current_y >= ((uint32_t)vga_h - (2 * - MARGIN)) / 16) {
     //TODO: Scrolling!
     current_y = 0;
   }

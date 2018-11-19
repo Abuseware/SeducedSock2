@@ -1,4 +1,5 @@
-AS = nasm
+#AS = nasm
+AS = yasm
 CC = gcc8
 
 ASFLAGS = -Isrc/asm -I.
@@ -66,5 +67,4 @@ run: live.iso
 debug:
 	tmux new-session -d 'gmake run'
 	tmux split-window -h 'gdb'
-	tmux attach -d
-
+	tmux

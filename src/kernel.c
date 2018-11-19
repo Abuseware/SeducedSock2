@@ -15,7 +15,7 @@
 #include <util.h>
 
 #include <multiboot2.h>
-#include "image.xbm"
+#include "image.c"
 
 void kmain() {
   //Disable NMI
@@ -41,11 +41,9 @@ void kmain() {
   MultibootInit();
 
   struct multiboot_tag_string *mb_loader = (struct multiboot_tag_string *)MultibootGetTag(MULTIBOOT_TAG_TYPE_BOOT_LOADER_NAME);
-  struct multiboot_tag_bootdev *mb_bootdev = (struct multiboot_tag_bootdev *)MultibootGetTag(MULTIBOOT_TAG_TYPE_BOOTDEV);
-  struct multiboot_tag_framebuffer *mb_fb = (struct multiboot_tag_framebuffer *)MultibootGetTag(MULTIBOOT_TAG_TYPE_FRAMEBUFFER);
 
   VGAInit();
-  VGASetTextColor(VGA_Red);
+  VGASetTextColor(VGA_Black);
 
   InterruptEnable();
 
@@ -54,15 +52,15 @@ void kmain() {
   BochsPuts(mb_loader->string);
   BochsPutc('\n');
 
-  //puts("Hello!");
+  for(unsigned int y = 0; y < gimp_image.height; y++)
+    for(unsigned int x = 0; x < gimp_image.width; x++) {
+      register uint32_t pixel = gimp_image.pixel_data[(y * gimp_image.width + x) * gimp_image.bytes_per_pixel] << 16;
+      pixel |= gimp_image.pixel_data[(y * gimp_image.width + x) * gimp_image.bytes_per_pixel + 1] << 8;
+      pixel |= gimp_image.pixel_data[(y * gimp_image.width + x) * gimp_image.bytes_per_pixel + 2];
+      VGAPutPixel(x, y, pixel);
+    }
 
-  for(unsigned int y = 0; y < image_height; y++)
-    for(unsigned int x = 0; x < image_width / 8; x++)
-      for(unsigned int p = 0; p < 8; p++) {
-        VGAPutPixel((x * 8) + p, y, image_bits[(y * image_width / 8) + x] & 1 << p ? 0 : 0xffffffff);
-      }
-
-  puts("Hello!");
+  puts("Hello World!");
 
 
 
