@@ -1,4 +1,3 @@
-[cpu AMD64]
 [bits 64]
 
 global inb

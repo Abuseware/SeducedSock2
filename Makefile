@@ -1,70 +1,59 @@
-#AS = nasm
 AS = yasm
-CC = gcc8
+CC = gcc
 
-ASFLAGS = -Isrc/asm -I.
-CFLAGS = -Isrc -Wall -Wextra -O0 -gdwarf -masm=intel -std=c11 -m64 -march=x86-64 -nostdlib -ffreestanding $(CFLAGS-$@)
-LDFLAGS = -Wl,-O1,--nmagic -Telf64.ld
-
-PY = python3.6
+ASFLAGS = -Isrc/asm -I. -f elf64
+CFLAGS = -Isrc -Wall -Wextra -O1 -gdwarf -masm=intel -std=c11 -m64 -march=x86-64 -nostdlib -ffreestanding $(CFLAGS-$@)
+LDFLAGS = -Wl,-O1,--nmagic -Telf64.ld -no-pie
 
 
 # File specific CFLAGS
-CFLAGS-src/interrupt_handlers.o=-mgeneral-regs-only
+CFLAGS-obj/interrupt_handlers.o=-mgeneral-regs-only
 
 
 # Targets
-.PHONY: all
+.PHONY: all objdir
 
-.SUFFIXES: .asm
+srcdir = src
+objdir = obj
+isodir = iso
 
-src_c = $(wildcard src/*.c)
-src_asm = $(wildcard src/asm/*.asm)
-obj = $(src_c:.c=.o) $(src_asm:.asm=.o)
-dep = $(obj:.o=.d)
+src_c = $(wildcard $(srcdir)/*.c)
+src_s = $(wildcard $(srcdir)/asm/*.s)
+obj_c = $(patsubst $(srcdir)/%,$(objdir)/%,$(src_c:.c=.o))
+obj_s = $(patsubst $(srcdir)/asm/%,$(objdir)/%,$(src_s:.s=.o))
 
-.asm.o:
-	$(AS) $(ASFLAGS) -f elf64 -o $@ $^
+$(objdir)/%.o: $(srcdir)/asm/%.s
+	$(AS) $(ASFLAGS) -o $@ $<
 
-%.d: %.c
-	$(CC) $(CFLAGS) -MM $< -MF $@
+$(objdir)/%.o: $(srcdir)/%.c
+	$(CC) $(CFLAGS) -c -o $@ $<
 
-.txt.h:
-	$(PY) rle.py $<
+all: $(objdir) kernel live.iso
 
--include $(dep)
+$(objdir):
+	install -d $(objdir)
 
-all: kernel live.iso
-
-kernel:	$(obj)
+kernel: $(obj_s) $(obj_c)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
-
-#kernel.sym: kernel
-#	nm kernel | awk '($$2 == "T"){ print $$1" "$$3 }' > $@
 
 live.iso: kernel grub.cfg
 	rm -f $@
-	install -d iso/boot/grub
-	install grub.cfg iso/boot/grub/grub.cfg
-	install kernel iso/kernel
-	grub-mkrescue -o $@ iso
+	install -d $(isodir)/boot/grub
+	install grub.cfg $(isodir)/boot/grub/grub.cfg
+	install kernel $(isodir)/kernel
+	grub-mkrescue -o $@ $(isodir)
 
 clean:
-	rm -f kernel
-	#rm -f kernel.sym
-	rm -f $(obj)
-	rm -f $(dep)
-	rm -f live.iso
-	find iso -mindepth 1 -type f -delete
-	find iso -mindepth 1 -type d -delete
-
-format: $(wildcard src/*.c) $(wildcard src/*.h)
-	env ARTISTIC_STYLE_OPTIONS=.astylerc astyle -n $(wildcard src/*.c) $(wildcard src/*.h)
+	rm -f kernel || true
+	rm -f live.iso || true
+	rm -rf $(objdir) || true
+	rm -rf $(isodir) || true
 
 run: live.iso
 	bochs -q || true
 
-debug:
-	tmux new-session -d 'gmake run'
-	tmux split-window -h 'gdb'
-	tmux
+docker-image: Dockerfile
+	docker build -t osdev .
+
+docker-build:
+	docker run -t --rm -v ${PWD}:/root/osdev osdev

@@ -3,10 +3,21 @@
 Barely working x86_64 "operating system"
 
 ## How to build
-Simply type "make" or "gmake" inside a project directory. You must have GNU Make,
-GCC 7+, NASM, Python 3 and GRUB2.
 
-Final image works as a CD.
+### Docker
+Repository contains Dockerfile for simple project buildroot.
+
+To create image:
+
+    make docker-image
+
+And to (re)build project
+
+    make docker-build
+
+### Native
+Simply type "make" or "gmake" inside a project directory. You must have GNU Make,
+GCC 7+, YASM and GRUB2.
 
 ## How to use
 Project contains Bochs config designed to work in any supported UNIX-like OS.

@@ -15,7 +15,7 @@
 #include <util.h>
 
 #include <multiboot2.h>
-#include "image.c"
+#include "image.h"
 
 void kmain() {
   //Disable NMI

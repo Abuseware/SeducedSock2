@@ -1,4 +1,3 @@
-[cpu AMD64]
 [bits 32]
 
 %include "src/asm/gdt.inc"
@@ -15,7 +14,7 @@ istruc multiboot_header
   at multiboot_header.magic, dd MULTIBOOT2_HEADER_MAGIC
   at multiboot_header.arch, dd MULTIBOOT_ARCHITECTURE_I386
   at multiboot_header.length, dd multiboot_header_end - multiboot_header_start
-  at multiboot_header.checksum, dd -(MULTIBOOT2_HEADER_MAGIC + MULTIBOOT_ARCHITECTURE_I386 + (multiboot_header_end - multiboot_header_start)) & 0xffffffffffffffff
+  at multiboot_header.checksum, dd (-(MULTIBOOT2_HEADER_MAGIC + MULTIBOOT_ARCHITECTURE_I386 + (multiboot_header_end - multiboot_header_start)) & 0xffffffffffffffff)
 iend
 
 ;align MULTIBOOT_HEADER_ALIGN

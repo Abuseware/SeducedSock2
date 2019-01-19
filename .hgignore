@@ -1,7 +1,6 @@
 syntax: glob
 iso
-*.o
-*.d
+obj
 kernel
 live.iso
 *~
