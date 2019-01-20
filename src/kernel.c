@@ -14,8 +14,19 @@
 #include <bochs.h>
 #include <util.h>
 
-#include <multiboot2.h>
+#include <multiboot.h>
 #include "image.h"
+
+struct multiboot_header mb_hdr __attribute__((section (".multiboot"), unused)) = {
+  .magic = MULTIBOOT_HEADER_MAGIC,
+  .flags = MULTIBOOT_PAGE_ALIGN | MULTIBOOT_VIDEO_MODE,
+  .checksum = -(MULTIBOOT_HEADER_MAGIC  + (MULTIBOOT_PAGE_ALIGN | MULTIBOOT_VIDEO_MODE)),
+
+  .mode_type = 0,
+  .width = 800,
+  .height = 600,
+  .depth = 32
+};
 
 void kmain() {
   //Disable NMI
@@ -38,26 +49,31 @@ void kmain() {
   InterruptSetDescriptor(0x4, 0x8, interrupt_cpu_overflow);
   InterruptSetDescriptor(0x20, 0x8, interrupt_rtc);
 
-  MultibootInit();
+  InterruptEnable();
 
-  struct multiboot_tag_string *mb_loader = (struct multiboot_tag_string *)MultibootGetTag(MULTIBOOT_TAG_TYPE_BOOT_LOADER_NAME);
+  BochsPuts("Bootloader: ");
+  BochsPuts((char *)(uint64_t)mb_info->boot_loader_name);
+  BochsPutc('\n');
+
+  if(!(mb_info->flags & MULTIBOOT_INFO_FRAMEBUFFER_INFO)) {
+    BochsPuts("Framebuffer info not provided\n");
+    return;
+  }
+
+  BochsPuts("Framebuffer type: ");
+  BochsPuti(mb_info->framebuffer_type);
+  BochsPutc('\n');
 
   VGAInit();
   VGASetTextColor(VGA_Black);
 
-  InterruptEnable();
-
-
-  BochsPuts("Bootloader: ");
-  BochsPuts(mb_loader->string);
-  BochsPutc('\n');
-
   for(unsigned int y = 0; y < gimp_image.height; y++)
     for(unsigned int x = 0; x < gimp_image.width; x++) {
-      register uint32_t pixel = gimp_image.pixel_data[(y * gimp_image.width + x) * gimp_image.bytes_per_pixel] << 16;
-      pixel |= gimp_image.pixel_data[(y * gimp_image.width + x) * gimp_image.bytes_per_pixel + 1] << 8;
-      pixel |= gimp_image.pixel_data[(y * gimp_image.width + x) * gimp_image.bytes_per_pixel + 2];
-      VGAPutPixel(x, y, pixel);
+      VGAPutPixel(x, y,
+        gimp_image.pixel_data[(y * gimp_image.width + x) * gimp_image.bytes_per_pixel] << 16 | \
+        gimp_image.pixel_data[(y * gimp_image.width + x) * gimp_image.bytes_per_pixel + 1] << 8 | \
+        gimp_image.pixel_data[(y * gimp_image.width + x) * gimp_image.bytes_per_pixel + 2]
+      );
     }
 
   puts("Hello World!");

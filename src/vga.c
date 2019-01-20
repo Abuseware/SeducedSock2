@@ -1,6 +1,6 @@
 #include <stdint.h>
 
-#include <multiboot2.h>
+#include <multiboot.h>
 #include <asm/port.h>
 
 #include <util.h>
@@ -22,13 +22,11 @@ static uint32_t current_y;
 static uint32_t text_color = 0xffffffff;
 
 void VGAInit(void) {
-  struct multiboot_tag_framebuffer *mb_fb = (struct multiboot_tag_framebuffer *)MultibootGetTag(MULTIBOOT_TAG_TYPE_FRAMEBUFFER);
-
-  vga = (uint32_t *)mb_fb->common.framebuffer_addr;
-  vga_w = mb_fb->common.framebuffer_width;
-  vga_h = mb_fb->common.framebuffer_height;
-  vga_bpp = mb_fb->common.framebuffer_bpp;
-  vga_pitch = mb_fb->common.framebuffer_pitch;
+  vga = (uint32_t *)mb_info->framebuffer_addr;
+  vga_w = mb_info->framebuffer_width;
+  vga_h = mb_info->framebuffer_height;
+  vga_bpp = mb_info->framebuffer_bpp;
+  vga_pitch = mb_info->framebuffer_pitch;
 
   /*if(BochsVGARead(VBE_DISPI_INDEX_ID) == VBE_DISPI_ID5) {
     BochsVGAWrite(VBE_DISPI_INDEX_ENABLE, VBE_DISPI_DISABLED);

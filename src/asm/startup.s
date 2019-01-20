@@ -2,72 +2,16 @@
 
 %include "src/asm/gdt.inc"
 %include "src/asm/pagetable.inc"
-%include "src/asm/multiboot2.inc"
 
 extern kmain
 global _start
 global mb_info
 
-[segment .multiboot]
-multiboot_header_start:
-istruc multiboot_header
-  at multiboot_header.magic, dd MULTIBOOT2_HEADER_MAGIC
-  at multiboot_header.arch, dd MULTIBOOT_ARCHITECTURE_I386
-  at multiboot_header.length, dd multiboot_header_end - multiboot_header_start
-  at multiboot_header.checksum, dd (-(MULTIBOOT2_HEADER_MAGIC + MULTIBOOT_ARCHITECTURE_I386 + (multiboot_header_end - multiboot_header_start)) & 0xffffffffffffffff)
-iend
-
-;align MULTIBOOT_HEADER_ALIGN
-;istruc multiboot_header_tag_relocatable
-;  at multiboot_header_tag_relocatable.type, dw MULTIBOOT_HEADER_TAG_RELOCATABLE
-;  at multiboot_header_tag_relocatable.flags, dw MULTIBOOT_HEADER_TAG_OPTIONAL
-;  at multiboot_header_tag_relocatable.size, dd 24
-;  at multiboot_header_tag_relocatable.min_addr, dd 0
-;  at multiboot_header_tag_relocatable.max_addr, dd 0xffffffff
-;  at multiboot_header_tag_relocatable.align, dd 0x1000
-;  at multiboot_header_tag_relocatable.preference, dd MULTIBOOT_LOAD_PREFERENCE_HIGH
-;iend
-
-align MULTIBOOT_HEADER_ALIGN
-istruc multiboot_header_tag_console_flags
-  at multiboot_header_tag_console_flags.type, dw MULTIBOOT_HEADER_TAG_CONSOLE_FLAGS
-  at multiboot_header_tag_console_flags.size, dd 12
-  at multiboot_header_tag_console_flags.console_flags, dd MULTIBOOT_CONSOLE_FLAGS_CONSOLE_REQUIRED
-iend
-
-align MULTIBOOT_HEADER_ALIGN
-istruc multiboot_header_tag_framebuffer
-  at multiboot_header_tag_framebuffer.type, dw MULTIBOOT_HEADER_TAG_FRAMEBUFFER
-  at multiboot_header_tag_framebuffer.size, dd 20
-  at multiboot_header_tag_framebuffer.width, dd 800
-  at multiboot_header_tag_framebuffer.height, dd 600
-  at multiboot_header_tag_framebuffer.depth, dd 32
-iend
-
-align MULTIBOOT_HEADER_ALIGN
-istruc multiboot_header_tag_information_request
-  at multiboot_header_tag_information_request.type, dw MULTIBOOT_HEADER_TAG_INFORMATION_REQUEST
-  at multiboot_header_tag_information_request.size, dd 12
-  at multiboot_header_tag_information_request.requests, dd \
-      MULTIBOOT_TAG_TYPE_BOOT_LOADER_NAME | \
-      MULTIBOOT_TAG_TYPE_BOOTDEV | \
-      MULTIBOOT_TAG_TYPE_FRAMEBUFFER
-iend
-
-align MULTIBOOT_HEADER_ALIGN
-istruc multiboot_header_tag
-  at multiboot_header_tag.type, dw MULTIBOOT_HEADER_TAG_END
-  at multiboot_header_tag.size, dd 8
-iend
-
-
-multiboot_header_end:
-
 [segment .text]
 _start:
   cli
 
-  test eax, MULTIBOOT2_BOOTLOADER_MAGIC
+  test eax, 0x2BADB002
   jnz multiboot_ok
   mov dx, 0x64
   mov al, 0xfe

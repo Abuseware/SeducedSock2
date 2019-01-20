@@ -3,10 +3,10 @@ ENTRY(_start)
 
 SECTIONS
 {
+    . = 1M;
     .multiboot : ALIGN(8) {
         *(.multiboot)
     }
-    . = 1M;
     .text BLOCK(4K) : ALIGN(4K) {
         *(.text)
     }
