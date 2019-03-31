@@ -17,7 +17,7 @@ And to (re)build project
 
 ### Native
 Simply type "make" or "gmake" inside a project directory. You must have GNU Make,
-GCC 7+, YASM and GRUB2.
+Clang, YASM and GRUB2.
 
 ## How to use
 Project contains Bochs config designed to work in any supported UNIX-like OS.
@@ -30,7 +30,7 @@ Why? Because. That's why :)
 
 ### Bochs:
 
-    bochs -q
+    make run
 
 ### QEMU
 

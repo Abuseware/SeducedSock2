@@ -1,7 +1,7 @@
 [bits 32]
 
-%include "src/asm/gdt.inc"
-%include "src/asm/pagetable.inc"
+%include "gdt.inc"
+%include "pagetable.inc"
 
 extern kmain
 global _start

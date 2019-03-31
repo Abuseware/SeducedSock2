@@ -1,9 +1,10 @@
 AS = yasm
-CC = gcc
+CC = clang
+LD = ld.bfd
 
 ASFLAGS = -Isrc/asm -I. -f elf64
-CFLAGS = -Isrc -Wall -Wextra -Ofast -gdwarf -masm=intel -std=c11 -m64 -march=x86-64 -mtune=generic -mcmodel=large -nostdlib -ffreestanding -mno-red-zone -mno-mmx -mno-sse -mno-sse2 $(CFLAGS-$@)
-LDFLAGS = -Wl,-O1,--nmagic -Telf64.ld -no-pie
+CFLAGS = -Isrc -Wall -Wextra -Ofast -gdwarf -masm=intel -std=c11 --target=x86_64-none-elf -m64 -march=x86-64 -mtune=generic -mcmodel=large -nostdlib -ffreestanding -fno-PIC -fno-PIE -mno-red-zone -mno-mmx -mno-sse -mno-sse2 $(CFLAGS-$@)
+LDFLAGS = -O1 --nmagic -no-pie -no-pic -Telf64.ld
 
 
 # File specific CFLAGS
@@ -12,6 +13,9 @@ CFLAGS-obj/interrupt_handlers.o=-mgeneral-regs-only
 
 # Targets
 .PHONY: all objdir clean
+
+# Directories
+syslinux = /usr/share/syslinux
 
 srcdir = src
 objdir = obj
@@ -42,22 +46,30 @@ build-kernel:
 
 kernel: $(obj_s) $(obj_c)
 	@echo "[LINK]" $@
-	@$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
+	@$(LD) $(LDFLAGS) -o $@ $^
 
 kernel.sym: kernel
 	@echo "[SYM]" $@
 	@nm kernel | awk '($$2 == "T"){ print $$1" "$$3 }' > $@
 
-$(isodir): kernel grub.cfg
+$(isodir): kernel grub.cfg syslinux.cfg
 	@echo "--- Preparing \"$(isodir)\" directory ---"
-	@install -d $(isodir)/boot/grub
-	@install grub.cfg $(isodir)/boot/grub/
+
+	@install -d $(isodir)/boot/syslinux
+
+	@install syslinux.cfg $(isodir)/boot/syslinux/
+
+	@install $(syslinux)/isolinux.bin $(isodir)/boot/syslinux/
+	@install $(syslinux)/ldlinux.c32 $(isodir)/boot/syslinux/
+	@install $(syslinux)/libcom32.c32 $(isodir)/boot/syslinux/
+	
+	@install $(syslinux)/mboot.c32 $(isodir)/boot/syslinux/
+
 	@install kernel $(isodir)/
 
 live.iso: $(isodir)
 	@echo "--- Building ISO ---"
-	@rm -f $@
-	@grub-mkrescue -o $@ --product-name="OS Dev" $(isodir)
+	mkisofs -o $@ -b boot/syslinux/isolinux.bin -c boot/syslinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table $(isodir)
 
 clean:
 	@echo "--- Cleaning ---"
@@ -76,4 +88,4 @@ docker-image: Dockerfile
 
 docker-build:
 	@echo "--- Starting Docker build ---"
-	@docker run -it --rm -v ${PWD}:/root/osdev osdev
+	@docker run -t --rm -v ${PWD}:/root/osdev osdev

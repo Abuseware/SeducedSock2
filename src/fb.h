@@ -1,9 +1,9 @@
 #pragma once
 
-#define putc(x) FBPutc(x)
-#define puts(x) FBPuts(x)
-#define puti(x) FBPuti(x)
-#define puth(x) FBPuth(x)
+//#define putc(x) FBPutc(x)
+//#define puts(x) FBPuts(x)
+//#define puti(x) FBPuti(x)
+//#define puth(x) FBPuth(x)
 
 #include <stdint.h>
 

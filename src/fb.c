@@ -6,7 +6,7 @@
 #include <util.h>
 #include <bochs.h>
 
-#include <multiboot2.h>
+#include <multiboot.h>
 
 #define COLOR_FG FB_Foreground
 #define COLOR_BG FB_Background
@@ -30,10 +30,9 @@ static uint8_t current_fg = COLOR_FG;
 static uint8_t current_bg = COLOR_BG;
 
 void FBInit(void) {
-  struct multiboot_tag_framebuffer *fb_info = (struct multiboot_tag_framebuffer *)MultibootGetTag(MULTIBOOT_TAG_TYPE_FRAMEBUFFER);
-  fb = (uint16_t *)fb_info->common.framebuffer_addr;
-  fb_w = fb_info->common.framebuffer_width;
-  fb_h = fb_info->common.framebuffer_height;
+  fb = (uint16_t *)0xB8000;
+  fb_w = 80;
+  fb_h = 25;
 
   //Set palette, divide hex values by 4 for mapping (256 -> 64 colors)
   for(uint8_t c = 0; c < 5; c++) {

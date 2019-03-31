@@ -8,24 +8,18 @@
 #include <interrupt.h>
 #include <interrupt_handlers.h>
 
-//#include <fb.h>
-#include <vga.h>
+#include <fb.h>
 
 #include <bochs.h>
 #include <util.h>
 
 #include <multiboot.h>
-#include "image.h"
 
 struct multiboot_header mb_hdr __attribute__((section (".multiboot"), unused)) = {
   .magic = MULTIBOOT_HEADER_MAGIC,
-  .flags = MULTIBOOT_PAGE_ALIGN | MULTIBOOT_VIDEO_MODE,
-  .checksum = -(MULTIBOOT_HEADER_MAGIC  + (MULTIBOOT_PAGE_ALIGN | MULTIBOOT_VIDEO_MODE)),
-
-  .mode_type = 0,
-  .width = 800,
-  .height = 600,
-  .depth = 32
+  .flags = MULTIBOOT_PAGE_ALIGN,
+  .checksum = -(MULTIBOOT_HEADER_MAGIC  + (MULTIBOOT_PAGE_ALIGN)),
+  .mode_type = 1
 };
 
 void kmain() {
@@ -55,34 +49,18 @@ void kmain() {
   BochsPuts((char *)(uint64_t)mb_info->boot_loader_name);
   BochsPutc('\n');
 
-  if(!(mb_info->flags & MULTIBOOT_INFO_FRAMEBUFFER_INFO)) {
-    BochsPuts("Framebuffer info not provided\n");
-    return;
-  }
+  FBInit();
+  FBClear();
+  FBCursorHide();
 
-  BochsPuts("Framebuffer type: ");
-  BochsPuti(mb_info->framebuffer_type);
-  BochsPutc('\n');
-
-  VGAInit();
-  VGASetTextColor(VGA_Black);
-
-  for(unsigned int y = 0; y < gimp_image.height; y++)
-    for(unsigned int x = 0; x < gimp_image.width; x++) {
-      VGAPutPixel(x, y,
-        gimp_image.pixel_data[(y * gimp_image.width + x) * gimp_image.bytes_per_pixel] << 16 | \
-        gimp_image.pixel_data[(y * gimp_image.width + x) * gimp_image.bytes_per_pixel + 1] << 8 | \
-        gimp_image.pixel_data[(y * gimp_image.width + x) * gimp_image.bytes_per_pixel + 2]
-      );
-    }
-
-  puts("Hello World!");
-
-
+  FBPuts("Hello World!\n");
 
   while(1) {
     __asm__("hlt");
-    //if(tick) {}
-    //tick = 0;
+    if(tick) {
+      FBPuti(counter);
+      FBPuts(". Hello!\n");
+      tick = 0;
+    }
   }
 }

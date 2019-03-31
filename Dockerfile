@@ -1,6 +1,6 @@
 FROM alpine:edge
 
-RUN apk add --no-cache gcc yasm make xorriso mtools grub-bios grub-efi
+RUN apk add --no-cache gcc clang yasm make xorriso mtools syslinux
 RUN mkdir /root/osdev
 
 WORKDIR /root/osdev
