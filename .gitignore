@@ -1,3 +1,4 @@
+.idea
 iso
 obj
 kernel
@@ -7,3 +8,4 @@ live.iso
 .DS_Store
 *.sublime-*
 *.orig
+*.ninja

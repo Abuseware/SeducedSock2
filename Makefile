@@ -1,9 +1,9 @@
 AS = yasm
 CC = clang
-LD = ld.bfd
+LD = ld.gold
 
 ASFLAGS = -Isrc/asm -I. -f elf64
-CFLAGS = -Isrc -Wall -Wextra -Ofast -gdwarf -masm=intel -std=c11 --target=x86_64-none-elf -m64 -march=x86-64 -mtune=generic -mcmodel=large -nostdlib -ffreestanding -fno-PIC -fno-PIE -mno-red-zone -mno-mmx -mno-sse -mno-sse2 $(CFLAGS-$@)
+CFLAGS = -Isrc -Wall -Wextra -O2 -gdwarf -masm=intel -std=c11 --target=x86_64-none-elf -m64 -march=x86-64 -mtune=generic -mcmodel=large -nostdlib -ffreestanding -fno-PIC -fno-PIE -mno-red-zone -mno-mmx -mno-sse -mno-sse2 $(CFLAGS-$@)
 LDFLAGS = -O1 --nmagic -no-pie -no-pic -Telf64.ld
 
 
@@ -15,7 +15,7 @@ CFLAGS-obj/interrupt_handlers.o=-mgeneral-regs-only
 .PHONY: all objdir clean
 
 # Directories
-syslinux = /usr/share/syslinux
+syslinux = /usr/lib/syslinux/modules/bios
 
 srcdir = src
 objdir = obj
@@ -59,7 +59,7 @@ $(isodir): kernel grub.cfg syslinux.cfg
 
 	@install syslinux.cfg $(isodir)/boot/syslinux/
 
-	@install $(syslinux)/isolinux.bin $(isodir)/boot/syslinux/
+	@install /usr/lib/ISOLINUX/isolinux.bin $(isodir)/boot/syslinux/
 	@install $(syslinux)/ldlinux.c32 $(isodir)/boot/syslinux/
 	@install $(syslinux)/libcom32.c32 $(isodir)/boot/syslinux/
 	

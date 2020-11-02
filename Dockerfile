@@ -1,7 +1,10 @@
-FROM alpine:edge
+FROM debian:sid
 
-RUN apk add --no-cache gcc clang yasm make xorriso mtools syslinux
+RUN apt-get update
+RUN apt-get upgrade -y
+RUN apt-get install -y clang yasm make cmake ninja-build genisoimage mtools syslinux isolinux
 RUN mkdir /root/osdev
 
 WORKDIR /root/osdev
-CMD time make all
+#CMD time ninja
+CMD bash -c 'time make all'
